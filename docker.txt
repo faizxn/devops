@@ -1,0 +1,173 @@
+
+
+#? container> is a instance of image.
+#? image> download from docker hub.
+
+
+__________________________/var/lib/docker/______________________________________________
+
+
+builder  buildkit  containers  image  network  overlay2  plugins  runtimes  swarm  tmp  trust  volumes
+
+
+___________________________starting container____________________________________________
+
+ 
+ # docker image pull hello-world
+ # docker pull ubuntu:14.04
+ 
+# docker image ls 	
+
+ # docker container run ubuntu/nginx
+ # docker container run ubuntu sleep 30           	 	<!-- run for 30 sec and later conatainer will be stop
+ # docker container ls 				<!-- show only running container
+ # docker container ls -a              			<!-- show status of container like stop container  
+ # docker ps 
+
+___________________________create container in background-start-stop-detach____________________
+
+
+ # docker container run -d nginx			<!-- d denotes detach to run background 
+ # docker container stop  <con-id>
+ # docker container start  <con-id>
+ # docker container restart <con-id>
+
+  # docker container run -d --name nginx-node-one nginx	<!-- run container background with given name
+  # docker container run -d --name nginx-node-two nginx
+
+ # docker container run -it nginx /bin/bash		<!-- runing new nginx in background and logging into bash
+ # docker exec -it <con-id> /bin/bash		<!-- existing container with logged into bash
+
+ # ctrl p+q 					<!-- leave bash without stopping container 
+ 
+ # docker container rm <con-id>
+ # docker container prune 			<!--remove all containers
+ 
+ # docker container ls -aq 			<!-- print all containers id 
+ # docker container rm $(docker container ls -aq) 	<!-- remove all containers  
+ 
+ # docker container inspect <con-id>		<!-- show con-ip.. created.. 
+
+
+____________________________container-log-starts-top_____________________________________
+
+
+ #  ps -aux | grep nginx                                                    	<!-- both host-machine and container has same process id.
+
+ #  docker container top 3be2f959e6a
+ #  docker container top 1c973430b1
+
+ # docker container logs 3be2f959e6a		<!-- nginx access logs
+ # docker container stats			<!-- display usges of cpu and memory and network i/o
+
+
+____________________________container port-mapping rename________________________________
+
+
+ # docker container rename <exiting-name>  <new-name>			
+ # docker container run -d -p 8080:80 --name nginx-node-port-mapped nginx        <!-- 8080-> request port and then forward port 80
+ #  docker container run -d -p 80:80 nginx
+
+ #  docker update --restart unless-stopped <con-id>			<!-- used to boot container after reboot container-machine
+ #  docker container run -d  --restart unless-stopped   -p 80:80 --name mynginx  nginx
+
+
+___________________________container attach -kill-pause-port________________________________
+
+
+ # docker container attach <con-id>		<!-- display input..output..error stream message
+ # docker container kill <con-id>			<!--  stop attempts to trigger a graceful shutdown by sending the standard signal terminal SIGTERM, whereas kill just kills the proces by default.
+ # docker container puase| unpause <con-id>
+ # docker container port <con-id>			<!-- show mapping port detail information
+
+
+____________________________container create.. diff.. copy file to container______________________
+
+
+ #? diff > its inspect changes to files or directories on a containers filesystem.
+
+ # docker container create ubuntu sleep 60
+ # docker container run <con-id>				<!-- find <con-id> from docker container ls -a 
+ # docker container diff <con-id>				<!--open another terminal [watch 'docker conatiner diff  [con-id]'.. see what chages is occured]
+
+ # docker container cp /host-machine-files/  <con-id>:/files-location   	<!--copy files from host machine to containers
+
+
+_____________________________container export-import______________________________________
+
+
+ # docker container run -it ubuntu /bin/bash
+
+ # apt-get -y update
+ # apt-get install -y tree git
+
+ # docker container export 43fbs456 > my_ubuntu_tree_git.tar	<!-- both commands are same for export
+ # docker container export 43fbs456 -o  my_ubuntu_tree_git.tar
+
+ # docker image import  my_ubuntu_tree_git.tar my_ubutnu_img
+ # docker image ls
+ # docker container run -it my_ubutnu_img /bin/bash
+
+ # git --version
+ # tree
+
+ # docker container ls
+
+_____________________________create docker-image from running container______________________________________
+
+
+ # docker container run -it ubuntu bash
+ # cd /tmp    -> mkdir {1..100} ->
+ 
+ # docker container commit --author "Faiz" -m "MyUbuntu" <b7caa43a2d15>   <my_ubuntu_img>
+ # docker image ls
+
+ # docker container run -it my_ubuntu_img  bash
+ # docker container ls
+
+
+ _____________________________docker push image to hub and add tag___________________________________________
+
+
+ # docker image ls
+ # docker login 					<!-- logged into docker hub
+
+ # docker image tag my_ubuntu_img  faizxn/my_ubuntu_custom_file
+ # docker push  faizxn/my_ubuntu_custom_file
+
+# docker image pull nginx
+# docker image ls
+# docker image tag nginx faizxn/nginx
+# docker image ls  || docker images
+# docker push  faizxn/nginx
+
+
+______________________________ docker history and filtering-inspect_____________________________________________
+
+
+ # docker image history nginx
+ # docker image ls --format '{{'.ID'}}, {{.Tag}}'
+ # docker image ls --format '{{'.ID'}}, {{.Tag}} - {{.Repository}}'
+
+	ba4bfdc0c69f,   latest - faizxn/my_ubuntu_custom_file
+	ba4bfdc0c69f,   latest - my_ubuntu_img
+	74435f89ab78,  latest - ubuntu
+	2622e6cca7eb,  latest - nginx
+
+
+_______________________________docker image save..load_____________________________________________________
+
+
+#?     Export is used to export the container’s file system into a tar file. it doesn’t export any volumes associated with it.
+#?     Save is used to save one or more images into a tar file with layer.
+
+Save and Export are both used for sharing tar files. But, save is used for images and can save multiple images into a tar file with all the layers and history.
+
+ # docker image save nginx > nginx.tar
+ # ls
+ 
+ # docker image load < nginx.tar
+ # docker image ls
+
+________________________________docker arhitecture layer and dockerfile__________________________________________
+ 
