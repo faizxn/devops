@@ -1,0 +1,148 @@
+
+
+# check docker swarm is running or not
+
+ docker info | head -50								
+
+ manager-node: it can be both worker and manager.
+ worker-node:	it can only be worker.
+
+ 
+# to start docker swarm initialization:------------------------------------------------------------------------------------------------------------------------------------
+
+ manager : 	docker swarm init							
+			docker swarm join --token <token-id> 10.0.0.1:2377
+			docker node ls											|| this command only allow in manager-node
+
+
+# add-remove docker node from swarm:----------------------------------------------------------------------------------------------------------------------------------------
+
+ manager :	docker swarm join-token manager							|| join as manager
+			docker swarm join-token worker							|| join as worker
+
+			docker node rm workerOne 		
+			docker node rm -f workerTwo			
+			
+ worker  :  docker swarm leave										|| after this command container will down
+ 
+ 
+# swarm node promote and demote:---------------------------------------------------------------------------------------------------------------------------------------------
+
+  manager : docker node ls
+			docker node inspect workerOne | less					|| check-role worker or manager
+			
+			docker node promote workerOne workerTwo					|| promote to manager
+ 			docker node demote workerOne workerTwo					|| demote to worker
+			
+			
+# swarm service - (create | logs | ls):---------------------------------------------------------------------------------------------------------------------------------------
+
+ docker service create -d alpine ping 10.0.0.100					|| host-machine ip address. container will ping this ip continously
+ docker service ls 
+ docker service inspect <container-id> | less
+ docker service logs <container-id>
+ 
+ docker service create -d replicas 4 alpine 						|| alpine container will randomly load either manger and worker
+ docker service ps <ps-id>											|| show all containers process
+ watch docker container ls											|| if delete/remove any container in worker-node. docker will automatically run another containers 
+ 
+
+# swarm service - (scale and port-mapping):----------------------------------------------------------------------------------------------------------------------------------- 
+
+ manager|worker: watch docker container ls							|| show where container is load
+ 
+ docker service create -d --replicas 5 alpine ping 10.0.0.100		|| creates two docker services
+ docker service create -d --replicas 10 alpine ping 10.0.0.100
+ 
+ docker service ls
+ docker service scale <ps-id>=10									|| number container we want to scale 
+ docker service rm <ps-id>
+ 
+ 
+ docker service create -d -p 8080:80 nginx							|| we can access the container from any of the docker-host ip address
+ docker service ls
+ 
+ 
+ 
+# swarm service - (replicated and global):-----------------------------------------------------------------------------------------------------------------------------------
+ 
+ docker service create  --name=visualizer  --publish=8080:8080/tcp   --constraint=node.role==manager --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock  dockersamples/visualizer
+ 
+ docker service create -d --replicas=5 alpine ping 1.1.1.1			|| randomly container loader in manager and worker
+ docker service create mode=global alpine ping 1.1.1.1				|| global keyword will create number of containers that manager and worker have.
+ 
+ 
+ 
+ 
+# swarm label and constraint:------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+ docker service create --replicas=3 --constraint="node.role=manager" alpine ping 1.1.1.1							|| this will create container at only manager
+ docker service create --replicas=3 --constraint="node.role=worker" alpine ping 1.1.1.1								|| this will create container at only worker
+ 
+ ||there are several-types of label node-label.. engine-label
+ 
+ docker node update --label-add="ssd-disk=yes" workerOne															|| node-label
+ docker service create --constraint="node.labels.ssd-disk==yes" --replicas=5 -d alpine ping 1.1.1.1
+
+ 
+ workerTwo: cd /etc/docker	-> nano daemon.json -> { "labels" : ["name=wokerTwo"]} -> reboot docker services		|| engine-label
+ docker service create --constraint="engine.labels.name==workerTwo --replicas=5 -d alpine ping 1.1.1.1
+ 
+ 
+ 
+ 
+# swarm node availability (active | pasue | drain): ------------------------------------------------------------------------------------------------------------------------
+
+ docker node update --availability=active workerOne				|| active means its available to load containers 
+ docker node update --availability=pasue workerOne				|| pasue means its not available not load any container
+ docker node update --availability=darin workerOne 				|| dainer means it will empty node. and trasfer the containers to other nodes.
+ 
+
+
+# swarm service create options: ------------------------------------------------------------------------------------------------------------------------ 
+ 
+ docker service create --help
+ docker service create --help | grep resour
+		
+		--reserve-cpu
+		--reserve-memory		|| when some container needs to specific memory and cpu
+
+
+
+# swarm secret: ------------------------------------------------------------------------------------------------------------------------ 
+  
+  docker secret create dbpassword -
+  password
+  docker secret ls
+  
+  docker service create -d --secret dbpassword alpine
+  docker container exec -it docker-id /bin/show		> cd /run/secret/
+  
+  docker service create -d --secret dbpassword -e MYSQL_ROOT_PASSWORD_FILE=/run/secret/dbpassword mysql
+  
+ 
+# swarm overley network: ------------------------------------------------------------------------------------------------------------------------
+
+  ingress network acts as load-balancer -> we can map specific port to multiple containers
+  
+  docker network ls
+  docker network create -d overlay overlay-network
+  docker network create -d overlay overlay-network --attachable						||attachable is used to attach network from worker nodes
+
+
+  docker service create -d --network overlay-network --replicas=5 nginx
+  docker service create -d --replicas 5 -p 80:80 nginx
+  
+  
+# swarm stack: ------------------------------------------------------------------------------------------------------------------------
+  
+ docker-compose does not work in docker swarm-mode.. its deploy on current node.. not work on other nodes..
+ 
+  docker stack deploy -c docker-compose.yml wordpressstack
+  docker stack ps wordpressstack
+
+  
+# swarm event: ------------------------------------------------------------------------------------------------------------------------
+ 
+  docker events		|| used to show logs of cluster
+  docker events --filter 'event=create'
