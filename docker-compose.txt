@@ -1,0 +1,47 @@
+
+# most application has multiple container tiers. so we have to create containers like mysql+wordpress. 
+ 
+	docker run --name mysql-database -e MYSQL_ROOT_PASSWORD=BanglaDesh -d mysql:latest
+	docker container run --name wordpress -e WORDPRESS_DB_HOST=172.17.0.2:3306  -e WORDPRESS_DB_USER=root -e WORDPRESS_DB_PASSWORD=BanglaDesh -d wordpress
+	
+	
+version: '3.3'
+
+services:
+	db:
+		image: mysql:5.7
+		volume:
+			- db_data: /var/lib/mysql
+		restart: always
+		enviroment:
+			- MYSQL_ROOT_PASSWORD=BanglaDesh
+			- MYSQL_DATABASE=wordpress
+			- MYSQL_USER=wordpress
+			- MYSQL_PASSWORD=BanglaDesh
+			
+	wordpress:
+		depends_on:
+			-db
+		
+		image: wordpress:latest
+		ports:
+			- "8080:80"
+		restart: always
+		enviroment:
+		
+			- WORDPRESS_DB_HOST=db:3306
+			- WORDPRESS_DB_USER=wordpress
+			- WORDPRESS_DB_PASSWORD=wordpress
+			- WORDPRESS_DB_NAME=wordpress
+			
+volume:
+	db_data: {}
+	
+	
+	
+--------------------------------------------------------
+
+	docker-compose up -d docker-compose.yml
+	
+	docker-compose ps
+	
