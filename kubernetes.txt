@@ -1,0 +1,604 @@
+
+
+  1.  first disable swap-memory									|| swapoff -a	nano /etc/fstab
+
+  2.  apt-get install -y apt-transport-https ca-certificates curl                                                                                                                                   url -y
+
+  3.  echo "deb [signed-by=/usr/share/keyrings/kubernetes-arch                                                                                                                                   ive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /                                                                                                                                   etc/apt/sources.list.d/kubernetes.list
+	  deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.k                                                                                                                                   ubernetes.io/ kubernetes-xenial main
+
+  4.  apt-get update -y
+  5.  apt-get install -y kubectl kubelet kubeadm
+
+
+
+ # enable cluster on manager-node: 
+ 
+  
+	- kubeadm init --pod-network=10.244.0.0/16				|| its a flannel network. recommended to use
+	
+	Your Kubernetes control-plane has initialized successfully! To start using your cluster, you need to run the following as a regular user:
+
+				mkdir -p $HOME/.kube
+				sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+				sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+				Alternatively, if you are the root user, you can run:
+
+				export KUBECONFIG=/etc/kubernetes/admin.conf
+
+	Then you can join any number of worker nodes by running the following on each as root:
+
+				kubeadm join 10.0.0.129:6443 --token ufo4er.fshyvjofxq2yj1dm \
+				--discovery-token-ca-cert-hash sha256:673834d741bd4e8635082305518a229c298e8ce2d36fa8d618891f6f1493a362
+
+
+	- kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+	-  kubectl get nodes
+
+
+
+
+ # create pod with yaml files:
+
+	+ kubectl run nginx --image=nginx --port=80 --restart=Never
+	
+	+ kubectl describe pod nginx				|| we find details information about docker-container id. which cluster its hosted container.
+	+ kubectl get pod -o wide | yaml | json
+	
+	+ docker container rm -f aea83b276b24
+	+ kubectl get pod  -w						|| watch pod .. if we delete container above command
+	+ kubectl delete pod nginx
+	+ kubectl delete pods --all
+	
+	+ kubectl get events 
+
+
+ # kubectl-label: 
+
+	+ kubectl get pod --show-labels
+	+ kubectl label pod --all service=ngix								|| set all pod label
+	+ kubectl label pod nginx name=ngix-label
+	+ kubectl label pod nginx name=ngix-label-name --overwrite			|| if existing name value want to chage. use --overwrite
+	+ kubectl label pod nginx name-									|| to remove label	
+
+
+
+ # create pod using yaml:
+
+	+ kubectl explain pod 
+	+ kubectl explain pod --recursive
+	+ kubectl run nginx --image=nginx  --port=80 --restart=Never -o yaml --dry-run=client  >  nginx.yaml		|| yaml template
+
+	+ kubectl apply -f firstpod.yaml
+
++++
+	-   		apiVersion: v1
+				kind: Pod
+				
+				metadata:
+				name: firstpod
+				labels:
+					enviro: firstpod
+				
+				spec:
+				containers:
+					- name: nginx-container
+					image: nginx
+				
+
++++ 
+
+
+ # difference between imperative vs declarative or create and apply:
+ 
+		+ imperative  : tell what to do - create .. expose.. modify etc
+		+ declarative : tell what want to have 
+
+
+
+ # set environment variable in pod container:
+		
+	-			apiVersion: v1
+				kind: Pod
+				
+				metadata:
+				name: firstpod
+				labels:
+					purpose: demonstrate-envars
+				
+				spec:
+				containers:
+				- name: nginxcontainer
+					image: nginx
+					env:									|| create enviroment variable in pod
+					- name: uname
+					value: Faiz
+					- name: city
+					value: Dhaka
+
+
+		+ kubectl describe pod								|| show enviroment information 
+
+also we find enviroment variable information at container
+
+		+ docker container exec -it b1586da345c0 env	
+
+
+
+ # run a command in pod containers:		
+		
+		+ kubectl exec firstpod -- env
+		+ kubectl exec firstpod -- ls
+		+ kubectl exec firstpod -c containername -it  -- ls /
+		
+		+ kubectl exec firstpod -it bash
+		+ kubectl exec firstpod -c containername -it -- bash
+				
+				
+ -		apiVersion: v1
+		kind: Pod
+		
+		metadata:
+		name: firstpod
+		labels:
+			purpose: demonstrate-envars
+		
+		spec:
+		containers:
+		- name: nginxcontainer
+			image: nginx
+			env:
+			- name: uname
+			value: Faiz
+			- name: city
+			value: Dhaka
+			args: ["sleep", "50"]							|| set command to a container 
+			
+			
+			
+ #  create multiple container in a pod:
+
+	- cat multiplecon.yaml
+	
+		apiVersion: v1
+		kind: Pod
+		
+		metadata:
+		
+		name: myfirstpod
+		labels:
+		name: amit
+		
+		spec:
+		
+		containers:
+		- name: firstcontainer
+			image: coolgourav147/nginx-custom
+			args: ["sleep", "3600" ]
+		
+		- name: secondcontainer
+			image: coolgourav147/nginx-custom
+		
+ 
+		+ kubectl exec firstpod -c firstcontainer -it -- bash
+		+ kubectl exec firstpod -c secondcontainer -it -- bash
+				
+ 
+ #  init container in a pod: by default pod run first init-container till its completed. then run/load other container in a pod.
+
+	
+		apiVersion: v1
+		kind: Pod
+		
+		metadata:
+		name: multipod
+		labels:
+		name: amit
+		
+		spec:
+		containers:
+		- name: firstcontainer
+			image: coolgourav147/nginx-custom
+			command: ["sleep", "3600"]
+		
+		- name: secondcontainer
+			image: coolgourav147/nginx-custom
+		
+		
+		initContainers:
+		- name: initcontainer
+			image: coolgourav147/nginx-custom
+			command: ["sleep", "60"]
+			
+			
+	
+ # cluster-ip/services: make ip service available and access pod within the cluster.
+
+
+		+ kubectl expose pod firstpod --port=8080 --target-port=80 --name myfirstclusterip
+		+ kubectl get svc
+		
+		+ curl 10.97.11.238:8080								|| get same outout from cluster nodes.
+		
+		
+	
+ # node-port/service: used to expose ip access from outside. its accessable from any of ip cluster. automatic works are load-balancer. 
+	
+		+ kubectl expose pod firstpod  --type=NodePort --port=8080 --target-port=80 --name mynodeport
+
+
+
+ # how service works: it belongs 3 type of ports. nodeport.. serviceport.. clusterport.	
+	
+
+		apiVersion: v1
+		kind: Service
+		
+		metadata:
+		name: myfirstservice
+		labels:
+			srvlabel: srvlabel
+		
+		spec:
+		type: NodePort
+		ports:
+		  - nodePort: 32000
+		    port: 9000
+		    targetPort: 80
+		
+		selector:
+			type:  app											|| this must be same to match with pod if we to expose/forward traffic to 32000
+
+	++++
+	
+		apiVersion: v1
+		kind: Pod
+		
+		metadata:
+		name: podname
+		labels:
+			type: app
+					
+	
+	
+	or  + kubectl label pod podname type=app		
+		+ kubectl describe svc									|| show every details
+
+
+
+		
+
+ # replication-controller:  keeps pod running. control of scaling. 
+
+		+ kubectl get rc
+		+ kubectl describe svc					|| check number of EndPoint of pod
+		+ kubectl get pod -o wide
+
+
+++ cat rc.yaml
+
+	-	apiVersion: v1		
+		kind: ReplicationController
+		
+		metadata:
+		name: firstreplicationcontroller
+		labels:
+			appname:  votingapp
+		
+		spec:
+		replicas:  5
+		
+		template:
+			metadata:
+			name: firstpod
+			labels:
+				type: app
+		
+			spec:
+			containers:
+				- name: nginx-containers
+				image:  nginx
+
+	
+++	cat svc.yaml
+	
+	-	apiVersion: v1
+		kind: Service
+		
+		metadata:
+		name: myfirstservice
+		labels:
+			type: app
+		
+		spec:
+		type: NodePort
+		ports:
+			- nodePort: 32000
+			port: 9000
+			targetPort: 80
+		
+		  selector:
+			type:  app
+
+
+		+ kubectl delete pod firstreplicationcontroller-7c8wm							|| if we delete any pod from replica-controller.. it will create another pod instantly.
+
+
+  # delete replication-controller:
+
+		+ kubectl delete rc replicationcontrollername									|| it will delete all pods under replica-controller
+		+ kubectl delete rc --cascade=orphan/false replicationcontrollername			|| only replica-controller delete.. pod will remain same
+
+		
+		
+  # scaling replication-controller:
+
+		+ kubectl scale rc --replicas=15 replicationcontrollername						|| scale-up
+		+ kubectl scale rc --replicas=5 replicationcontrollername						|| scale-down
+	
+		+ kubectl edit rc replicationcontrollername										|| set number of replica
+
+		+ kubectl replace -f rc.yaml													|| it will replace exiting config
+		+ kubectl delete -f  rc.yaml													|| it will delete existing config
+
+
+
+  # how replication-controller works: first create a pod. then create rc.. and rc will map to exiting pod. but if create another rc using same label it will create another pod with rc.
+  
+	-	apiVersion: v1
+		
+		kind: Pod
+		
+		metadata:
+		name: mypod
+		labels:
+			type: application
+		
+		spec:
+		containers:
+			- name: nginxcontainer
+			  image: nginx
+		
+										|| if we run this rc then first time pod will add to rc. second time another rc will create.
+		
+	-	apiVersion: v1
+
+		kind: ReplicationController
+
+		metadata:
+		name: anotherreplicacontroller
+		labels:
+			type: votingapp
+				
+		spec:
+		replicas: 1
+		template:
+			metadata:
+			name: pod
+			labels:
+				type: application
+		
+			spec:
+			containers:
+				- name: ngixcontainer
+	     		  image: nginx
+		
+	
+	
+ # replica-set: selector is used in replica-set. (26-do-exmaple-again)
+ 
+ 
+	replica-set 				- set based selector
+	replication-controller 		- equality based selector
+
+
+	selector:
+	  matchLabels:
+	    type: myapp														|| inherit from pod label		
+	
+	selector:
+	  matchExpressions:
+	    - key: app
+		  operator: In / Not In
+		  values:
+		    - myapp1
+			- myapp2
+
+
+
+ # deployment: application version controlling..  auto scaling etc
+
+
+- cat srv.yml   														|| service is created to redirect traffic 
+
+	apiVersion: v1
+	kind: Service
+	
+	metadata:
+	name: myfirstservice
+	labels:
+		type: app
+	spec:
+	type: NodePort
+	ports:
+		- nodePort: 32000
+		port: 9000
+		targetPort: 80
+	
+	selector:
+		type:  app
+	
+ 
+- cat deployment.yaml												 || replica-set and deployment is created 
+
+
+	apiVersion: apps/v1
+	
+	kind: Deployment
+	
+	metadata:
+	name: first-deploy
+	labels:
+		name:  first-deploy
+	
+	spec:
+	replicas: 5
+	selector:
+		matchLabels:
+		type:  app
+	
+	template:
+		metadata:
+		name:  doploy-pod
+		labels:
+			type: app
+	
+		spec:
+		containers:
+			- name: container
+			image: nginx
+	
+
+
+
+
+ # deployment maxunavailable - minreadysecond: rollout only triggered if any changes in pod. rollout will not work, if number of replicas will change..
+  
+ default : minreadysecond-0.. maxunavailable-25%..maxsurge-25% 
+ 
+ 
+ cat srv.yml							|| 
+   
+ -	apiVersion: v1
+ 
+	kind: Service	
+	metadata:	
+	name: myfirstservice
+	labels:
+		type: app
+
+	spec:
+	type: NodePort
+	ports:
+		- nodePort: 32000
+		port: 9000
+		targetPort: 80
+		
+	selector:
+		type:  app
+
+cat deployment.yaml     				||
+
+ -	apiVersion: apps/v1
+	
+	kind: Deployment
+	
+	metadata:
+	name: first-deploy
+	labels:
+		name:  first-deploy
+	
+	spec:
+	replicas: 5
+	selector:
+		matchLabels:
+		type:  app
+	
+	template:
+		metadata:
+		name:  doploy-pod
+		labels:
+			type: app
+	
+		spec:
+		containers:
+			- name: container
+			image: coolgourav147/nginx-custom:v1
+	
+    
+ - rollout only triggered if any changes in pod. rollout will not work, if number of replicas will change.
+
+    + kubectl rollout status deployment first-deploy 
+ 
+ -	apiVersion: apps/v1
+
+ 	kind: Deployment
+	
+	metadata:
+	name: first-deploy
+	labels:
+		name:  first-deploy
+	
+	spec:
+	replicas: 10
+	minReadySeconds: 60								|| 60 sec will to get ready a pod		
+	strategy:
+		rollingUpdate:									
+		maxSurge: 2									|| add 2 pods extra while updating from existing pod.. later 2 pods will erase.. 
+		maxUnavailable: 5							|| update 5 pod at a time from exiting pod..   
+		type:  RollingUpdate
+	
+	selector:
+		matchLabels:
+		type:  app
+	
+	template:
+		metadata:
+		name:  doploy-pod
+		labels:
+			type: app
+	
+		spec:
+		containers:
+			- name: container
+			image: coolgourav147/nginx-custom:v2
+			
+			
+ # rollout (default - strategy):
+		  
+	
+	+ kubectl rollout history deployment first-deploy
+
+
+ - 	apiVersion: apps/v1
+ 	kind: Deployment
+
+	metadata:
+	name: first-deploy
+	annotations:
+	  kubernetes.io/change-cause: "my-custom-message"
+	labels:
+		name:  first-deploy
+
+   
+	+ kubectl rollout history deployment first-deploy 
+	+ kubectl rollout undo deployment first-deploy 			|| last-2 history will exchange
+	
+	+ kubectl rollout history deployment first-deploy 
+	+ kubectl rollout undo --to-revision=2 deployment first-deploy 
+	
+	+ kubectl rollout history deployment first-deploy 
+
+
+ # recreate-strategy: 
+	
+ -	apiVersion: apps/v1
+
+ 	kind: Deployment
+	
+	metadata:
+	name: first-deploy
+	labels:
+		name:  first-deploy
+	
+	spec:
+	strategy:
+		Recreate:											|| it has down time to create replica-set to update
+		
+		
+		
+ # resource-request:
+ 
+ 
