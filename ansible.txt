@@ -1,0 +1,124 @@
+
+
+ + apt install ansible sshpass -y
+ + ansible --version
+ 
+ 
+ - inventory: defines the hosts and groups of hosts upon which commands.. modules.. and tasks in a playbook operate..
+   default inventory is hosts. default username is root.. port is 22 and mode is ssh.. 
+ 
+ 
+ + ansible kali -m ping -i myhost.txt			-> kali ansible_host=10.0.0.137 ansible_user=root ansible_ssh_pass=1234 ansible_port=22 ansible_connection=ssh
+ + ansible all -m ping -i myhost.txt			-> if multiple hosts in inventory
+ 
+ 
+	- inventory-example:
+ 
+	mysql1 ansible_host=10.0.0.137 ansible_user=root ansible_ssh_pass=root ansible_port=22 ansible_connection=ssh
+	mysql2 ansible_host=10.0.0.138 ansible_user=root ansible_ssh_pass=root ansible_port=22 ansible_connection=ssh
+	
+	websrv1 ansible_host=10.0.0.137 ansible_user=root ansible_ssh_pass=root ansible_port=22 ansible_connection=ssh
+	websrv2 ansible_host=10.0.0.138 ansible_user=root ansible_ssh_pass=root ansible_port=22 ansible_connection=ssh
+
+
+	- multiple hosts in a groups:
+
+	[mysqls]
+	mysql1
+	mysql2
+		
+	[webservers]
+	websrv1
+	websrv2
+	
+	or
+	
+	[mysqls]  		or [webservers]
+	mysql[1:2] 		or webservers[1:2]
+	
+	
+	 -two/more groups:  
+	 
+	 [db_web:children]
+	 mysqls
+	 webservers
+
+
+
+__________________________________________________________________________________________________
+
+
+	- ansible-playbook:	what to do at target machines. its set of tasks in yml files. 
+
+	+ ansible-playbook playbook.yml -i myhost.txt
+
+
+++++++++++++++
+
+
+	-
+	  name:  this is play-book name
+	  hosts:  webservers
+	  tasks: 
+	    -
+		  name:  "first task"
+		  command:  touch /tmp/mytext.txt
+
+		  		  
+++++++++++++++
+
+	-
+	  name:  this is play-book name
+	  hosts:  webservers
+	  tasks: 
+	    -
+		  name:  "create directory"
+		  command:  mkdir /tmp/ansible-directory
+		  		  
+	    -
+		  name:  "copy hosts files"
+		  command:  touch /tmp/mytext.txt
+
+	
+++++++++++++++
+
+	-
+	  name:  this is play-book name
+	  hosts:  webservers
+	  tasks: 
+	    -
+		  name:  "create directory"
+		  command:  mkdir /tmp/ansible-directory
+		  		  
+	    -
+		  name:  "copy hosts files"
+		  command:  touch /tmp/mytext.txt	  
+		  
+	-
+	  name:  this is play-book name
+	  hosts:  databases
+	  tasks: 
+	    -
+		  name:  "create directory"
+		  command:  mkdir /tmp/ansible-directory
+		  		  
+	    -
+		  name:  "copy hosts files"
+		  command:  touch /tmp/mytext.txt	  
+
+
+__________________________________________________________________________________________________
+		  
+		  
+	- ansible-modules:	
+	
+	
+	
+	
+		  
+		  
+		  
+		
+		
+		
+		
