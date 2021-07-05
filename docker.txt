@@ -184,7 +184,7 @@ none-network : this is used if we dont want any ip address to containers.
 
 network-dns : manually created bridge network dns is enabled by default.
 
-
+docker network connect/disconnect <network-name> <container-id>           || to add addtional container network.. we can multiple bridge networks to containers. 
 
 
 
