@@ -178,6 +178,13 @@
 
 # docker network ---------------------------------------------------
 
+bridge-network : we can multiple bridge network and attach it to containers
+host-network : this only allow for once at container. everything is isolated except network. it behave exact like host machine ip address.
+none-network : this is used if we dont want any ip address to containers.
+
+network-dns : manually created bridge network dns is enabled by default.
+
+
 
 
 
