@@ -1,4 +1,3 @@
-
  container	> is a instance of image.
  image		> download from docker hub.
 
@@ -15,69 +14,68 @@
  docker image ls 	
 
  docker container run ubuntu/nginx
- docker container run ubuntu sleep 30           	                         	                    || run for 30 sec and later conatainer will be stop
- docker container ls 									                                                                 || show only running container
- docker container ls -a              					                                                     || show status of container like stop container  
+ docker container run ubuntu sleep 30           	                        
+ docker container ls 									                  
+ docker container ls -a              					                   
  docker ps 
  
- docker container logs <con-id>							                                                         || container logs
+ docker container logs <con-id>							                   
 
 
 # container in background(start|stop|detach) ----------------
 
- docker container run -d nginx							                                                          || -d denotes detach to run background 
+ docker container run -d nginx							                                                         
  docker container stop  <con-id>
  docker container start  <con-id>
  docker container restart <con-id>
 
- docker container run -d --name nginx-node-one nginx	                                          || run container background with given name
+ docker container run -d --name nginx-node-one nginx	                                         
  docker container run -d --name nginx-node-two nginx
 
- docker container run -it nginx /bin/bash				                                                  || runing new nginx in background and logging into bash
- docker exec -it <con-id> /bin/bash						                                                      || existing container with logged into bash
+ docker container run -it nginx /bin/bash				                                                  
+ docker exec -it <con-id> /bin/bash						                                                      
 
- ctrl p+q 											                                                     	                    || leave bash without stopping container 
+ ctrl p+q 											                    						|| leave bash without stopping container 
  
  docker container rm <con-id>
- docker container prune 							                                                               	|| remove all containers
+ docker container prune 							                                                               
  
- docker container ls -aq 								                                                              || print all containers id 
- docker container rm $(docker container ls -aq) 		                                             || remove all containers  
+ docker container ls -aq 								                 						|| print all containers id 
+ docker container rm $(docker container ls -aq) 		                                            
  
- docker container inspect <con-id>						                                                       || show con-ip.. created.. 
+ docker container inspect <con-id>						                                      
 
 
 
 # container-log-starts-top --------------------------------
 
- ps -aux | grep nginx                                                                         || both host-machine and container has same process id
+ ps -aux | grep nginx                                                    						|| both host-machine and container has same process id
 
  docker container top 3be2f959e6a
  docker container top 1c973430b1
 
- docker container logs 3be2f959e6a					                                                       || nginx access logs
- docker container stats									                                                              || display usges of cpu and memory and network i/o
+ docker container logs 3be2f959e6a					                                                       
+ docker container stats									                                      
 
 
 
 # container port-mapping rename ---------------------------
 
  docker container rename <exiting-name>  <new-name>			
- docker container run -d -p 8080:80 --name nginx-node-port-mapped nginx        			           	|| 8080-> request port and then forward port 80
+ docker container run -d -p 8080:80 --name nginx-node-port-mapped nginx        			           	
  docker container run -d -p 80:80 nginx
 
- docker update --restart unless-stopped <con-id>											                                   || used to boot container after reboot container-machine
+ docker update --restart unless-stopped <con-id>											   	|| used to boot container after reboot container-machine
  docker container run -d  --restart unless-stopped   -p 80:80 --name mynginx  nginx
 
 
 
 # container attach -kill-pause-port ------------------------
 
- docker container attach <con-id>					                                                        || display input..output..error stream message
- docker container kill <con-id>					                                                         	|| stop attempts to trigger a graceful shutdown by sending the standard signal                                                                                                    terminal SIGTERM, whereas kill just kills the proces by default.
+ docker container attach <con-id>					                                             || display input..output..error stream message
+ docker container kill <con-id>					                                                 || stop attempts to trigger a graceful shutdown by sending the standard signal                                                                                                    terminal SIGTERM, whereas kill just kills the proces by default.
  docker container puase| unpause <con-id>
- docker container port <con-id>					                                                         	|| show mapping port detail information
-
+ docker container port <con-id>					                                                       
 
 
 
@@ -87,10 +85,10 @@
  -diff > its inspect changes to files or directories on a containers filesystem.
 
  docker container create ubuntu sleep 60
- docker container run <con-id>										                                                    	|| find <con-id> from docker container ls -a 
- docker container diff <con-id>											                                                   || open another terminal [watch 'docker conatiner diff  [con-id]'.. see what                                                                                                     chages is occured]
+ docker container run <con-id>										               
+ docker container diff <con-id>											                        || open another terminal [watch 'docker conatiner diff  [con-id]'.. see what                                                                                                     chages is occured]
 
- docker container cp /host-machine-files/  <con-id>:/files-location   	                      || copy files from host machine to containers
+ docker container cp /host-machine-files/  <con-id>:/files-location   	                 
 
 
 
@@ -103,7 +101,7 @@
  apt-get -y update
  apt-get install -y tree git
 
- docker container export 43fbs456 > my_ubuntu_tree_git.tar				                              || both commands are same for export
+ docker container export 43fbs456 > my_ubuntu_tree_git.tar				                            
  docker container export 43fbs456 -o  my_ubuntu_tree_git.tar
 
  docker image import  my_ubuntu_tree_git.tar my_ubutnu_img
@@ -131,7 +129,7 @@
 # docker push image to hub and add tag ------------------------
 
  docker image ls
- docker login 														                                                               || logged into docker hub
+ docker login 														                                                             
  
  docker image tag my_ubuntu_img  faizxn/my_ubuntu_custom_file
  docker push  faizxn/my_ubuntu_custom_file
@@ -179,5 +177,13 @@
 
 
 # docker network ---------------------------------------------------
+
+
+
+
+
+
+
+
 
 
