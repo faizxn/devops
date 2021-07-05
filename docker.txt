@@ -35,12 +35,12 @@
  docker container run -it nginx /bin/bash				                                                  
  docker exec -it <con-id> /bin/bash						                                                      
 
- ctrl p+q 											                    						|| leave bash without stopping container 
+ ctrl p+q 												|| leave bash without stopping container 
  
  docker container rm <con-id>
  docker container prune 							                                                               
  
- docker container ls -aq 								                 						|| print all containers id 
+ docker container ls -aq 								|| print all containers id 
  docker container rm $(docker container ls -aq) 		                                            
  
  docker container inspect <con-id>						                                      
@@ -49,7 +49,7 @@
 
 # container-log-starts-top --------------------------------
 
- ps -aux | grep nginx                                                    						|| both host-machine and container has same process id
+ ps -aux | grep nginx                                   || both host-machine and container has same process id
 
  docker container top 3be2f959e6a
  docker container top 1c973430b1
@@ -65,15 +65,15 @@
  docker container run -d -p 8080:80 --name nginx-node-port-mapped nginx        			           	
  docker container run -d -p 80:80 nginx
 
- docker update --restart unless-stopped <con-id>											   	|| used to boot container after reboot container-machine
+ docker update --restart unless-stopped <con-id>		|| used to boot container after reboot container-machine
  docker container run -d  --restart unless-stopped   -p 80:80 --name mynginx  nginx
 
 
 
 # container attach -kill-pause-port ------------------------
 
- docker container attach <con-id>					                                             || display input..output..error stream message
- docker container kill <con-id>					                                                 || stop attempts to trigger a graceful shutdown by sending the standard signal                                                                                                    terminal SIGTERM, whereas kill just kills the proces by default.
+ docker container attach <con-id>					     || display input..output..error stream message
+ docker container kill <con-id>					         || stop attempts to trigger a graceful shutdown by sending the standard signal                                                                                                    terminal SIGTERM, whereas kill just kills the proces by default.
  docker container puase| unpause <con-id>
  docker container port <con-id>					                                                       
 
@@ -86,7 +86,7 @@
 
  docker container create ubuntu sleep 60
  docker container run <con-id>										               
- docker container diff <con-id>											                        || open another terminal [watch 'docker conatiner diff  [con-id]'.. see what                                                                                                     chages is occured]
+ docker container diff <con-id>					         || open another terminal [watch 'docker conatiner diff  [con-id]'.. see what                                                                                                     chages is occured]
 
  docker container cp /host-machine-files/  <con-id>:/files-location   	                 
 
@@ -177,14 +177,3 @@
 
 
 # docker network ---------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
