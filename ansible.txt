@@ -70,18 +70,7 @@
 		  name:  "copy hosts files"
 		  command:  touch /tmp/mytext.txt
 	
-
-	-
-	  name:  this is play-book name
-	  hosts:  webservers
-	  tasks: 
-	    -
-		  name:  "create directory"
-		  command:  mkdir /tmp/ansible-directory
-		  		  
-	    -
-		  name:  "copy hosts files"
-		  command:  touch /tmp/mytext.txt	  
++++	  
 		  
 	-
 	  name:  this is play-book name
