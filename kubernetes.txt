@@ -4,8 +4,12 @@
 
   2.  apt-get install -y apt-transport-https ca-certificates curl                                                                                                                                   url -y
 
-  3.  echo "deb [signed-by=/usr/share/keyrings/kubernetes-arch                                                                                                                                   ive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /                                                                                                                                   etc/apt/sources.list.d/kubernetes.list
-	  deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.k                                                                                                                                   ubernetes.io/ kubernetes-xenial main
+  3.  sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg		|| Google Signin Key
+
+
+	echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+
 
   4.  apt-get update -y
   5.  apt-get install -y kubectl kubelet kubeadm
